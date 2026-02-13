@@ -4,9 +4,11 @@ import cookieParser from "cookie-parser";
 import 'dotenv/config';
 import authRouter from "./routes/authRoutes.js";
 
+
 //connect to mongodb
 import connectDB from "./config/mongodb.js";
 connectDB();
+
 
 //call app
 const app = express();
