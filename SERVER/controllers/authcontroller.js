@@ -110,17 +110,23 @@ export const logout = async (req, res) => {
 // Send OTP for email verification
 export const sendVerifyOtp = async (req, res) => {
     try {
+        // create user ID
         const { userId } = req.body;
         const user = await userModel.findById(userId);
 
-        if (user.isVerified) {
-            return res.status(400).json({ success: false, message: "User is already verified" });
+        if (user.isAccountVerified) {
+            return res.json({ success: false, message: "User Account is already verified" })
         }
-     const otp = String(Math.floor(100000 + Math.random() * 900000));
-     user.verifyOtp = otp;
-      user.verifyOtpExpiry = Date.now() + 24 * 60 * 60 * 1000; // OTP valid for 10 minutes
-        await user.save();
 
+         const otp = String(Math.floor(100000 + Math.random() * 900000));
+         // add to the database
+         user.verifyOtp = otp;
+         // if their is a user the check OTP expiry date
+         user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; 
+         // save database
+         await user.save();
+
+         // send email of OTP
          const mailOptions = {
             from: `"MERN Auth App" <${process.env.SENDER_EMAIL}>`,
             to: user.email,
@@ -128,6 +134,7 @@ export const sendVerifyOtp = async (req, res) => {
             text: `Welcome to our app: ${user.name}, Account created successfully! with email id: ${user.email}. Your verification OTP is: ${otp}`,
 
         }
+        //send email
         await transporter.sendMail(mailOptions);
 
         res.json({ success: true, message: "Verification OTP sent to email" });
@@ -137,13 +144,15 @@ export const sendVerifyOtp = async (req, res) => {
     }
 };
 
-export const verifyEmail = async (req, res) => {
+// get OTP to verify user account
+    export const verifyEmail = async (req, res) => {
      const { userId, otp } = req.body;
      
      if (!userId || !otp) {
-        return res.status(400).json({ success: false, message: "User ID and OTP are required" });
+        return res.status(400).json({ success: false, message: "Missing Details User ID and OTP are required" });
     }
     try {
+        // find user in userID
         const user = await userModel.findById(userId);
 
         if (!user) {
@@ -153,13 +162,15 @@ export const verifyEmail = async (req, res) => {
         if(user.verifyOtp === '' || user.verifyOtp !== otp) {
             res.json({ success: false, message: "Invalid OTP" });
         }
+      // if user found check  OTP expiry date
         if (user.verifyOtpExpireAt < Date.now()) {
             return res.status(400).json({ success: false, message: "OTP has expired" });
         }
 
-        user.isVerified = true;
+        user.isAccountVerified = true;
         user.verifyOtp = '';
         user.verifyOtpExpireAt = 0;
+        // save user to database
         await user.save();
         return res.json({ success: true, message: "Email verified successfully" });
 

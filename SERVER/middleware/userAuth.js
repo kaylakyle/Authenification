@@ -10,6 +10,7 @@ const userAuth = (req, res, next) => {
     try {
         const tokenDecode = jwt.verify(token, process.env.JWT_SECRET);
        
+        // find id
         if (tokenDecode.id) {
             res.body.userId = tokenDecode.id;
         }else {
