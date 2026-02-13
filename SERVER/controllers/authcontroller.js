@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import userModel from "../models/usermodels.js";
 import jwt from "jsonwebtoken";
+import transporter from "../config/nodemailer.js";
 
 // Registration controller
 export const register = async (req, res) => {
@@ -35,13 +36,34 @@ export const register = async (req, res) => {
             sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
+         // Prepare email options
+         const mailOptions = {
+            from: `"MERN Auth App" <${process.env.SENDER_EMAIL}>`,
+            to: email,
+            subject: "Welcome to Our App - MERN Authentication",
+            text: `Welcome to our app: ${name}, Account created successfully! with email id: ${email}`,
 
+        };
+
+        // Send welcome email
+        await transporter.sendMail(mailOptions);
+
+        //  Send email safely (does NOT break registration)
+        // try {
+        //     const info = await transporter.sendMail(mailOptions);
+        //     console.log(" Email sent:", info.response);
+        // } catch (mailError) {
+        //     console.error(" Email failed:", mailError.message);
+        // }
+
+        //final response
         return res.status(201).json({ success: true, message: "User registered successfully", token });
     } catch (error) {
         console.error(error);
+        };
+
         return res.status(500).json({ success: false, message: "Error in registration" });
-    }
-};
+    };
 
 // Login controller
 export const login = async (req, res) => {
