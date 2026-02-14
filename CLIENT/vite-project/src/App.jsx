@@ -1,0 +1,17 @@
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+
+const App = () => {
+  return (
+    <div>
+      <Routes>
+        <Route path = '/home' element = {<Home/>}/>
+        <Route path = '/login' element = {<Login/>}/>
+        <Route path = '/emailverify' element = {<EmailVerify/>}></Route>
+        <Route path = '/resetpassword' element = {<ResetPassword/>}></Route>
+      </Routes>
+    </div>
+  )
+}
+
+export default App
