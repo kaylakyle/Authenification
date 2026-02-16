@@ -17,7 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 
 const allowedOrigins = [
-  "http://localhost:5173"
+  "http://localhost:5174"
 ];
 
 //MIDDLEWARES
