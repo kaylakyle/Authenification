@@ -1,9 +1,15 @@
-import React from 'react'
+//creates both login and registration form
+import React, { useState } from 'react'
 
 const Login = () => {
+
+  const login =()=> {
+    const[state, setState] =useState('Sign Up')
+  }
+
   return (
     <div>
-      <h1>login</h1>
+      <img src={lynn_logo} alt="logo" />
     </div>
   )
 }
