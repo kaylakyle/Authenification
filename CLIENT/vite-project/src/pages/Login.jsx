@@ -18,37 +18,45 @@ const Login = () => {
   const [email, setemail] = useState('')
   const [password, setpassword] = useState('')
 
-  const onSubmitHandler = async (e) => {
-    try {
-    e.preventDefault();
-      
-    axios.defaults.withCredentials = true
+const onSubmitHandler = async (e) => {
+  e.preventDefault();
 
-    if(state === 'Sign Up'){
-     const {data} = await axios.post(`${backendUrl}/api/auth/register`, {name, email, password}) 
-     
-     if(data.success){
-      setIsLoggedIn(true)
-      navigate('/')
-     }else {
-     toast.error(data.message)
-     }else{
-      const {data} = await axios.post(`${backendUrl}/api/auth/login`, {email, password})    
-     
-     if(data.success){
-      setIsLoggedIn(true)
-      navigate('/')
-     }else {
-     toast.error(data.message)
-     }
-     }catch (error) {
-      toast.error(error.response.data.message || 'An error occurred')
+  try {
+    axios.defaults.withCredentials = true;
+
+    if (state === 'Sign Up') {
+      const { data } = await axios.post(
+        `${backendUrl}/api/auth/register`,
+        { name, email, password }
+      );
+
+      if (data.success) {
+        setIsLoggedIn(true);
+        navigate('/');
+      } else {
+        toast.error(data.message);
+      }
+
+    } else {   // Login part
+
+      const { data } = await axios.post(
+        `${backendUrl}/api/auth/login`,
+        { email, password }
+      );
+
+      if (data.success) {
+        setIsLoggedIn(true);
+        navigate('/');
+      } else {
+        toast.error(data.message);
+      }
     }
-  }
-}
-  };
 
-   
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'An error occurred');
+  }
+};
+  
 
   return (
     <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-200 to-purple-400'>
