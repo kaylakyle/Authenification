@@ -17,8 +17,8 @@ const NavBar = () => {
       `${backendUrl}/api/auth/send-verify-otp`
     );  
     if (data.success) {
-       navigate('/verify-email');
-       toast.success(data.message);
+       navigate('/emailverify');
+       toast.success(data.message); 
     } else {
       toast.error(data.message);
     }
@@ -26,20 +26,19 @@ const NavBar = () => {
     toast.error(error.response?.data?.message || 'An error occurred');
   }
 };
+ 
 
-
-
-   const logout = async () => {
+const logout = async () => {
   try {
-    axios.defaults.withCredentials = true;
-
     const { data } = await axios.post(
-      `${backendUrl}/api/auth/logout`
+      `${backendUrl}/api/auth/logout`,
+      {},
+      { withCredentials: true }
     );
 
     if (data.success) {
       setIsLoggedin(false);
-      setUserData(false);
+      setUserData(null);
       navigate('/');
     }
 
