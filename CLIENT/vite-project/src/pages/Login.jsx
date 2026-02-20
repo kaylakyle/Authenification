@@ -1,17 +1,16 @@
-import React, { use, useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { assets } from '../assets/assets'
 import { useNavigate } from 'react-router-dom'
 import {toast} from 'react-toastify'
 import axios from 'axios'
-import { useContext } from 'react'
-import { AppContent } from '../contexts/AppContext' 
+import { AppContext } from '../contexts/AppContext' 
 
 const Login = () => {
 
 
   const navigate = useNavigate()
 
-   const {backendUrl, setIsLoggedIn} = useContext(AppContent)
+   const {backendUrl, setIsLoggedIn, getUserData} = useContext(AppContext)
 
   const [state, setState] = useState('Sign Up')
   const [name, setname] = useState('')
@@ -26,15 +25,15 @@ const onSubmitHandler = async (e) => {
 
     if (state === 'Sign Up') {
       const { data } = await axios.post(
-        // `${backendUrl}/api/auth/register`,
-        // { name, email, password }
+        `${backendUrl}/api/auth/register`,
+        { name, email, password }
 
-        (backendUrl + '/api/auth/register',
-          {name, email, password})
+       
       );
 
       if (data.success) {
         setIsLoggedIn(true);
+        getUserData();
         navigate('/');
       } else {
         toast.error(data.message);
@@ -43,15 +42,16 @@ const onSubmitHandler = async (e) => {
     } else {   // Login part
 
       const { data } = await axios.post(
-        // `${backendUrl}/api/auth/login`,
-        // { email, password }
+        `${backendUrl}/api/auth/login`,
+        { email, 
+          password }
 
-        (backendUrl + '/api/auth/register',
-          {email, password})
+       
       );
 
       if (data.success) {
         setIsLoggedIn(true);
+        getUserData();
         navigate('/');
       } else {
         toast.error(data.message);
@@ -59,7 +59,7 @@ const onSubmitHandler = async (e) => {
     }
 
   } catch (error) {
-    toast.error(error.response?.data?.message || 'An error occurred');
+    toast.error(error.response?.error?.message || 'An error occurred');
   }
 };
   
@@ -67,11 +67,11 @@ const onSubmitHandler = async (e) => {
   return (
     <div className='flex items-center justify-center min-h-screen px-6 sm:px-0 bg-gradient-to-br from-blue-200 to-purple-400'>
       
-      <img 
+      {/* <img 
         src={assets.lynn_logo} 
         alt="logo" 
         className='absolute left-5 sm:left-20 top-5 w-28 sm:w-32 cursor-pointer'
-      />
+      /> */}
 
       <div className='bg-slate-900 p-10 rounded-lg shadow-lg w-full sm:w-96 text-indigo-300 text-sm'>
         <h2 className='text-3xl font-semibold mb-3 text-white text-center'>{state === 'Sign Up' ? 'Create Account' : 'Login'}</h2>
@@ -103,11 +103,14 @@ const onSubmitHandler = async (e) => {
 
   <div className='mb-4 flex items-center gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
     <input 
-      type="password" 
-      placeholder='Password' 
-      className='bg-transparent border-0 outline-none w-full text-white'  
-    />
+   onChange={(e) => setpassword(e.target.value)}
+   value={password}
+   type="password" 
+   placeholder='Password' 
+  className='bg-transparent border-0 outline-none w-full text-white'  
+/>  
   </div>
+  
 
   {state === 'Login' && (
     <p onClick={()=>navigate('/ResetPassword')} className='text-indigo-500 cursor-pointer mb-4'>Forgot Password?</p>
