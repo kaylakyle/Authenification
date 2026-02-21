@@ -2,156 +2,180 @@ import React, { useState, useRef, useContext } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from "axios";
 import { AppContext } from '../contexts/AppContext';
+import { toast } from "react-toastify";
 
 const ResetPassword = () => {
 
   const [email, setEmail] = useState('')
-  const [NewPassword, setNewPassword] = useState('')
-  const [isEmailSent,  setisEmailSent] = useState('')
-  const [otp,  setotp] = useState(0)
-  const [isOtpSubmitted,  setisOtpSubmitted] = useState(false)
+  const [newPassword, setNewPassword] = useState('')
+  const [isEmailSent, setIsEmailSent] = useState(false)
+  const [otp, setOtp] = useState('')
+  const [isOtpSubmitted, setIsOtpSubmitted] = useState(false)
 
-  const {backendUrl} = useContext(AppContext)
-  axios.defaults.withCedentials = true;
-
+  const { backendUrl } = useContext(AppContext)
   const navigate = useNavigate()
+  const inputRefs = useRef([])
 
-   const inputRefs = React.useRef([])
-   
-     const handleInput = (e, index) => {
-       if (e.target.value.length > 0 && index < inputRefs.current.length - 1) {
-         inputRefs.current[index + 1].focus()
-       }
-     }
-   
-     const handleKeyDown = (e, index) => {
-       if(e.key === 'Backspace' && e.target.value === '' && index > 0){
-         inputRefs.current[index - 1].focus()
-       }
-     }
-   
-     const handlepaste = (e) => {
-       const paste = e.clipboardData.getData('text')
-       const pasteArray = paste.split('')
-       pasteArray.forEach((char, index) =>{
-         if(inputRefs.current[index]) {
-           inputRefs.current[index].value = char;
-         }
-       })
-     }
+  axios.defaults.withCredentials = true;
 
-     const onSubmitEmail = async (e) => {
-       e.preventDefault();
-       try {
-          const { data } = await axios.post(
-            `${backendUrl}/api/auth/send-reset-otp`, {email})
-            data.success ? toast.success(data.success) : toast.error(data.message)
-            data.success && setisEmailSent(true)
-       } catch(error) {
-         toast.error(error.message)
-       }
-     }
+  // Move to next input
+  const handleInput = (e, index) => {
+    if (e.target.value.length > 0 && index < 5) {
+      inputRefs.current[index + 1].focus()
+    }
+  }
 
- const onSubmitOtp = async (e)=> {
-           e.preventDefault();
-           const otpArray = inputRefs.current.map(e => e.value)
-           setotp(otpArray.join(''))
-           setisOtpSubmitted(true)
- }
-    const onSubmitNewPassword = async (e)=> {
-           e.preventDefault();
-           try {
-            const { data } = await axios.post(
-            `${backendUrl}/api/auth\/reset-password`, {email, otp, password})
-             data.success ? toast.success(data.success) : toast.error(data.message)
-            data.success && navigate('/login')
-           } catch (error) {
-             toast.error(error.message)
-           }
- }
+  //Backspace support
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Backspace' && e.target.value === '' && index > 0) {
+      inputRefs.current[index - 1].focus()
+    }
+  }
+
+  // Paste support
+  const handlePaste = (e) => {
+    const paste = e.clipboardData.getData('text').slice(0, 6)
+    paste.split('').forEach((char, index) => {
+      if (inputRefs.current[index]) {
+        inputRefs.current[index].value = char
+      }
+    })
+  }
+
+  //  SEND EMAIL
+  const onSubmitEmail = async (e) => {
+    e.preventDefault()
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/auth/send-reset-otp`,
+        { email }
+      )
+
+      if (data.success) {
+        toast.success(data.message)
+        setIsEmailSent(true)
+      } else {
+        toast.error(data.message)
+      }
+
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Something went wrong")
+    }
+  }
+
+  //SUBMIT OTP
+  const onSubmitOtp = (e) => {
+    e.preventDefault()
+
+    const otpArray = inputRefs.current.map(input => input.value)
+    const enteredOtp = otpArray.join('')
+
+    if (enteredOtp.length !== 6) {
+      return toast.error("Enter valid 6 digit OTP")
+    }
+
+    setOtp(enteredOtp)
+    setIsOtpSubmitted(true)
+  }
+
+  // RESET PASSWORD 
+  const onSubmitNewPassword = async (e) => {
+    e.preventDefault()
+
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/auth/reset-password`,
+        { email, otp, newPassword }
+      )
+
+      if (data.success) {
+        toast.success(data.message)
+        navigate('/login')
+      } else {
+        toast.error(data.message)
+      }
+
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Bad Request")
+    }
+  }
 
   return (
     <div className='flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 to-purple-400'>
-      {/* enter email id */}
 
-      {!isEmailSent && 
+      {/*  EMAIL FORM */}
+      {!isEmailSent &&
+        <form onSubmit={onSubmitEmail} className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
+          <h1 className='text-white text-2xl font-semibold text-center mb-4'>Reset Password</h1>
+          <p className='text-indigo-300 mb-6'>Enter your registered Email Address</p>
 
-      <form onSubmit={onSubmitEmail} className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-     
-        <h1 className='text-white text-2xl font-semibold text-center mb-4'>
-          Reset Password
-        </h1>
-
-        <p className='text-indigo-300 mb-6'>
-         Enter your registered Email Address
-        </p>
-
-         <div className='flex justify-between mb-4 gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]' >
-            <input className='bg-transparent outline-none text-white' type='Email' placeholder='Email Id' value={email} onChange={e => setEmail(e.target.value)} required/>
-         
-        </div>
-         <button className='w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>
-         Submit
-        </button>
-
-      </form>
-}
-   {/* input otp */}
-
-   {!isOtpSubmitted && isEmailSent &&
-         <form onSubmit={onSubmitOtp} className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-        <h1 className='text-white text-2xl font-semibold text-center mb-4'>
-          Reset Password OTP Email OTP
-        </h1>
-
-        <p className='text-indigo-300 mb-6'>
-          Enter the 6 digit code sent to your email:
-        </p>
-
-        <div className='flex justify-between mb-8' onPaste={handlepaste}>
-          {Array(6).fill(0).map((_, index) => (
+          <div className='mb-4 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
             <input
-              key={index}
-              type="text"
-              maxLength={1}
+              className='bg-transparent outline-none text-white w-full'
+              type='email'
+              placeholder='Email Id'
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               required
-              ref={(e) => (inputRefs.current[index] = e)}
-              onInput={(e) => handleInput(e, index)}
-              onKeyDown={(e) => handleKeyDown(e, index)}
-              className='w-12 h-12 bg-[#333A5C] text-white text-center text-xl rounded-md'
             />
-          ))}
-        </div>
+          </div>
 
-        <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>
-          Submit
-        </button>
-      </form>
-  }    
-          {/* reset password */}
+          <button className='w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>
+            Submit
+          </button>
+        </form>
+      }
 
+      {/*  OTP FORM  */}
+      {!isOtpSubmitted && isEmailSent &&
+        <form onSubmit={onSubmitOtp} className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
+          <h1 className='text-white text-2xl font-semibold text-center mb-4'>Enter OTP</h1>
+          <p className='text-indigo-300 mb-6'>Enter the 6 digit code sent to your email</p>
 
-{isOtpSubmitted && isEmailSent &&
+          <div className='flex justify-between mb-8' onPaste={handlePaste}>
+            {Array(6).fill(0).map((_, index) => (
+              <input
+                key={index}
+                type="text"
+                maxLength={1}
+                required
+                ref={(el) => inputRefs.current[index] = el}
+                onInput={(e) => handleInput(e, index)}
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                className='w-12 h-12 bg-[#333A5C] text-white text-center text-xl rounded-md'
+              />
+            ))}
+          </div>
+
+          <button className='w-full py-2.5 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>
+            Submit
+          </button>
+        </form>
+      }
+
+      {/*  NEW PASSWORD FORM  */}
+      {isOtpSubmitted &&
         <form onSubmit={onSubmitNewPassword} className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'>
-     
-        <h1 className='text-white text-2xl font-semibold text-center mb-4'>
-          New Password
-        </h1>
+          <h1 className='text-white text-2xl font-semibold text-center mb-4'>New Password</h1>
+          <p className='text-indigo-300 mb-6'>Enter your New Password</p>
 
-        <p className='text-indigo-300 mb-6'>
-         Enter your New Password
-        </p>
+          <div className='mb-4 w-full px-5 py-2.5 rounded-full bg-[#333A5C]'>
+            <input
+              className='bg-transparent outline-none text-white w-full'
+              type='password'
+              placeholder='Password'
+              required
+              value={newPassword}
+              onChange={e => setNewPassword(e.target.value)}
+            />
+          </div>
 
-         <div className='flex justify-between mb-4 gap-3 w-full px-5 py-2.5 rounded-full bg-[#333A5C]' >
-            <input className='bg-transparent outline-none text-white' type='Password' placeholder='Password' required value={NewPassword} onChange={e => setNewPassword(e.target.value)} />
-         
-        </div>
-         <button className='w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>
-         Submit
-        </button>
+          <button className='w-full py-3 bg-gradient-to-r from-indigo-500 to-indigo-900 text-white rounded-full'>
+            Submit
+          </button>
+        </form>
+      }
 
-      </form>
-}      
     </div>
   )
 }

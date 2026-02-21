@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import { AppContext } from '../contexts/AppContext'
 import axios from "axios";
 import { useNavigate } from 'react-router-dom'
@@ -10,7 +10,7 @@ const EmailVerify = () => {
 
 
   const {userData, backendUrl, getUserData, IsLoggedin} = useContext(AppContext)
-  axios.defaults.withCedentials = true;
+  axios.defaults.withCredentials = true;
 
   const inputRefs = React.useRef([])
 
@@ -51,7 +51,7 @@ const EmailVerify = () => {
               navigate('/')
             }else {
               toast.error(data.message)
-            }className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm'
+            }
       
     } catch (error) {
       toast.error(error.message)
@@ -60,14 +60,14 @@ const EmailVerify = () => {
 
   useEffect(()=>{
            
-        IsLoggedin && userData && userData.is.AccountVerified && navigate('/')  
+        IsLoggedin && userData && userData.isAccountVerified && navigate('/')  
     
       },[IsLoggedin, userData])
 
   return (
     <div className='flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-200 to-purple-400'>
       
-      <form onSubmit={onSubmitHandler} >
+      <form onSubmit={onSubmitHandler} className='bg-slate-900 p-8 rounded-lg shadow-lg w-96 text-sm' >
         <h1 className='text-white text-2xl font-semibold text-center mb-4'>
           Verify Email OTP
         </h1>
