@@ -2,9 +2,11 @@
 
 # Create FRONTEND folder
 
-# cd FRONTEND - npx create-react-app -create react App
+# cd FRONTEND - npm create vite@latest
 
 # npm i
+
+# npm install axios react-router-dom react-toastify
 
 # npm install -D tailwind css
 
